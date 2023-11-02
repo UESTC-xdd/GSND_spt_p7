@@ -74,7 +74,6 @@ public class Level1Mode : LevelSingleton<Level1Mode>
             case 0:
                 {
                     FirstCupTrigger.OutlineComp.enabled= false;
-                    SecondCupTrigger.TriggerAble = true;
                     break;
                 }
             case 1:

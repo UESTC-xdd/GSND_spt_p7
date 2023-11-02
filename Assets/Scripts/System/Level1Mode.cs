@@ -8,12 +8,17 @@ public class Level1Mode : LevelSingleton<Level1Mode>
 {
     public float RewindTime;
 
+    public CupTrigger FirstCupTrigger;
+    public CupTrigger SecondCupTrigger;
+
     [Header("Reference")]
     public PlayableDirector m_Director;
 
     private GameObject CurHideObj;
     private GameObject[] CurNeedToHideBeforeRewindObjs;
     private GameObject[] CurNeedToHideAfterRewindObjs;
+
+    private int CurRewindIndex = 0;
 
     public void OnStartDialog(TimelineAsset timelineAsset,GameObject hidObj, GameObject[] NeedToHideBeforeRewindObjs, GameObject[] NeedToHideAfterRewindObjs)
     {
@@ -59,5 +64,28 @@ public class Level1Mode : LevelSingleton<Level1Mode>
         }
 
         UIMgr.Instance.BG.FadeOut(0);
+        OnFinishRewind();
+    }
+
+    public void OnFinishRewind()
+    {
+        switch (CurRewindIndex)
+        {
+            case 0:
+                {
+                    FirstCupTrigger.OutlineComp.enabled= false;
+                    SecondCupTrigger.TriggerAble = true;
+                    break;
+                }
+            case 1:
+                {
+                    SecondCupTrigger.OutlineComp.enabled= false;
+                    break;
+                }
+            default:
+                break;
+        }
+
+        CurRewindIndex++;
     }
 }

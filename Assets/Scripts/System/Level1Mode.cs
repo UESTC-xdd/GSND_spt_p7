@@ -1,135 +1,63 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Playables;
+using UnityEngine.Timeline;
 
 public class Level1Mode : LevelSingleton<Level1Mode>
 {
-    [Header("First Task")]
-    public Outline CalenderOutline;
+    public float RewindTime;
 
-    [Header("Second Task")]
-    public Outline ToDoListOutline;
+    [Header("Reference")]
+    public PlayableDirector m_Director;
 
-    [Header("Third Task")]
-    public Outline[] AllCleanOutline;
-    public List<IInteractable> AllCleanOutInteractables = new List<IInteractable>();
+    private GameObject CurHideObj;
+    private GameObject[] CurNeedToHideBeforeRewindObjs;
+    private GameObject[] CurNeedToHideAfterRewindObjs;
 
-    [Header("Fourth Task")]
-    public GameObject EmptyPlate;
-    public Outline EmptyPlateOutline;
-    public IInteractable EmptyPlateInteractable;
-    public float WaitBakeTime;
-    public GameObject FoodPlate; 
-    public AudioClip BakeClip;
-
-    [Header("Fifth Task")]
-    public Outline BedOutline;
-    public BoxCollider BedTrigger;
-
-    private void Start()
+    public void OnStartDialog(TimelineAsset timelineAsset,GameObject hidObj, GameObject[] NeedToHideBeforeRewindObjs, GameObject[] NeedToHideAfterRewindObjs)
     {
-        SetUpFirstTask();
+        CurHideObj = hidObj;
+        CurNeedToHideBeforeRewindObjs= NeedToHideBeforeRewindObjs;
+        CurNeedToHideAfterRewindObjs = NeedToHideAfterRewindObjs;
+        m_Director.playableAsset = timelineAsset;
+        StartCoroutine(StartDialogCou());
     }
 
-    public void ChangeToGameMode()
+    public IEnumerator StartDialogCou()
     {
-        GameManager.Instance.ChangeToGameMode();
-    }
-
-    public void SetUpFirstTask()
-    {
-        CalenderOutline.enabled = true;
-    }
-
-    public void FinishFirstTask()
-    {
-        Debug.Log("Fist Task Finished");
-        SetUpSecondTask();
-    }
-        
-
-    public void SetUpSecondTask()
-    {
-        ToDoListOutline.enabled = true;
-    }
-
-    public void FinishSecondTask()
-    {
-        Debug.Log("Second Task Finished");
-        SetUpThirdTask();
-    }
-
-    public void SetUpThirdTask()
-    {
-        foreach (var outline in AllCleanOutline)
-        {
-            outline.enabled = true;
-        }
-
-        foreach (var interactable in AllCleanOutInteractables)
-        {
-            interactable.Interactable = true;
-        }
-    }
-
-    public void FinishedOneClean(IInteractable thisInteractable)
-    {
-        if(AllCleanOutInteractables.Contains(thisInteractable))
-        {
-            AllCleanOutInteractables.Remove(thisInteractable);
-            if(AllCleanOutInteractables.Count<=0)
-            {
-                FinishThirdTask();
-            }
-        }
-        thisInteractable.gameObject.SetActive(false);
-    }
-
-    public void FinishThirdTask()
-    {
-        Debug.Log("Third Task Finished");
-        SetUpFourthTask();
-    }
-
-    public void SetUpFourthTask()
-    {
-        EmptyPlateOutline.enabled = true;
-        EmptyPlateInteractable.Interactable = true;
-    }
-
-    public void BakeTheFood()
-    {
-        UIMgr.Instance.BG.FadeIn(1, Color.black);
-        AudioMgr.Instance.PlayOneShot2DSE(BakeClip);
-        StartCoroutine(WaitForBakeCou());
-    }
-
-    private IEnumerator WaitForBakeCou()
-    {
-        yield return new WaitForSeconds(WaitBakeTime);
-        EmptyPlate.SetActive(false);
-        FoodPlate.SetActive(true);
-        UIMgr.Instance.BG.FadeOut(1);
+        UIMgr.Instance.BG.FadeIn(2, Color.black);
         yield return new WaitUntil(() => UIMgr.Instance.BG.IsDone);
-        FinishFourthTask();
+
+        foreach (var obj in CurNeedToHideBeforeRewindObjs)
+        {
+            obj.SetActive(false);
+        }
+
+        m_Director.Play();
     }
 
-    public void FinishFourthTask()
+    public void OnStopDialog()
     {
-        Debug.Log("Fourth Task Finished");
-        SetUpFifthTask();
+        UIMgr.Instance.BG.FadeOut(0);
+        StartCoroutine(RewindCou());
     }
 
-    public void SetUpFifthTask()
+    public IEnumerator RewindCou()
     {
-        BedOutline.enabled = true;
-        BedTrigger.enabled = true;
-    }
+        yield return new WaitForSeconds(RewindTime);
+        UIMgr.Instance.BG.FadeIn(3, Color.black);
+        yield return new WaitUntil(() => UIMgr.Instance.BG.IsDone);
 
-    public void FinishFifthTask()
-    {
-        BedOutline.enabled = false;
-        Debug.Log("Fifth Task Finished");
-        LevelMgr.Instance.LoadNextLevel();
+        foreach (var gameObj in CurNeedToHideAfterRewindObjs)
+        {
+            gameObj.SetActive(false);
+        }
+        foreach (var obj in CurNeedToHideBeforeRewindObjs)
+        {
+            obj.SetActive(true);
+        }
+
+        UIMgr.Instance.BG.FadeOut(0);
     }
 }

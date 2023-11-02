@@ -15,8 +15,7 @@ public class UIMgr : Singleton<UIMgr>
 
     private void Start()
     {
-        GameManager.Instance.OnEnterModeAction -= OnEnterMode;
-        GameManager.Instance.OnEnterModeAction += OnEnterMode;
+
     }
 
     private void OnEnterMode(GameMode toMode)

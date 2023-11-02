@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
@@ -120,6 +121,10 @@ namespace StarterAssets
 		private void LateUpdate()
 		{
 			CameraRotation();
+			if (Input.GetKeyDown(KeyCode.P))
+			{
+				SceneManager.LoadScene("PlayerDeductionScene");
+			}
 		}
 
 		private void GroundedCheck()
